@@ -53,3 +53,18 @@ uncompressed duplicates, it does not remove files under RPM management.
 The shell script [`remove_duplicates.sh`](remove_duplicates.sh) can be used to
 remove the duplicates. Run it once a day or so during the RPM bootstrap process,
 definitely after installing RPM packaged Perl for the first time.
+
+
+Bootstrap Build Order
+---------------------
+
+The build order is not *too* important. At the start, the `--nodeps` switch is
+often needed because both library and runtime dependencies are in fact present
+but not yet under RPM management, so the RPM database does not know about them.
+
+I started with the [`kernel-abi-headers`](SPECS/kernel-abi-headers.spec) package
+because it would be easy to restore that `noarch` package if something went
+wrong, and I followed that with the [`vim`](SPECS/vim.spec) package because it
+tested a binary build and again would be easy to restore the package if
+something went wrong.
+
