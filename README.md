@@ -114,6 +114,10 @@ pretty much the order in the LFS book starting with Chapter Five. I am not
 using the build instructions from the early chapters of the LFS book, most of my
 build instructions are *fairly* similar to the Chapter 8 build instructions.
 
+I might actually build SSH2 and Git before proceeding to LFS Chapter 8 stuff
+just so I can use Git without needing to reboot into another GNU/Linux install
+first. They (and needed dependencies) would be built with RPM from the start.
+
 Once GCC is finished and Util-Linux (not yet started) is finished, the plan is
 to pause and audit each spec file, making sure things like the specified license
 is correct and other things, before proceeding with RPM bootstrapping the
