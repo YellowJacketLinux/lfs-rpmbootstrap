@@ -1,0 +1,20 @@
+# Version definitions
+%perl5_version 5.40
+
+# General macros
+%__perl /usr/bin/perl
+%perl5 %__perl
+%perl5_corelib    %{_prefix}/lib/perl5/%{perl5_version}/core_perl
+%perl5_corearch   %{_libdir}/perl5/%{perl5_version}/core_perl
+%perl5_sitelib    %{_prefix}/lib/perl5/%{perl5_version}/site_perl
+%perl5_sitearch   %{_libdir}/perl5/%{perl5_version}/site_perl
+%perl5_vendorlib  %{_prefix}/lib/perl5/%{perl5_version}/vendor_perl
+%perl5_vendorarch %{_libdir}/perl5/%{perl5_version}/vendor_perl
+
+# License macro
+%perl5_cpanlic %{_datadir}/licenses-cpan-common
+
+# API/ABI specific macros
+%perl5_os_platform %{_arch}-linux-gnu
+%perl5_API Perl-%{perl5_version}
+%perl5_ABI %{perl5_API}-%{perl5_os_platform}
