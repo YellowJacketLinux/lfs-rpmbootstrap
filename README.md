@@ -68,3 +68,58 @@ wrong, and I followed that with the [`vim`](SPECS/vim.spec) package because it
 tested a binary build and again would be easy to restore the package if
 something went wrong.
 
+I deviated from the LFS instructions for the OpenSSL API stack, using LibreSSL
+as my default library for the OpenSSL API stack and only using OpenSSL for
+Python which does not support building against LibreSSL. To accomplish that in
+the LFS build, LibreSSL was installed with a prefix of `/usr` and OpenSSL was
+installed with a prefix of `/opt/openssl`.
+
+With RPM management, both can be built with a prefix of `/usr` with the only
+hitch being the `-devel` package for both can not be installed at the same time.
+
+So next I rebuilt [`libressl`](SPECS/libressl.spec) followed by
+[`openssl`](SPECS/openssl.spec) with a `/usr` prefix, allowing me to temporarily
+uninstall the `libressl-devel` package so I could install the `openssl-devel`
+package and rebuild [`python3`](SPECS/python3.spec) linking against OpenSSL
+libraries in `/usr/lib` instead of in `/opt/openssl/lib` and the `/opt/openssl`
+directory could be deleted.
+
+The `openssl-devel` package was then uninstalled and `libressl-devel` restored
+so that other packages that want the OpenSSL API and can link against LibreSSL
+to get it would do so. I just *personally* have higher trust in the LibreSSL
+developers and I do not care about FIPS certification.
+
+LFS only builds `libelf` from ElfUtils but RPM requires `libdwarf` from ElfUtils
+so part of building RPM itself was rebuilding ElfUtils *with* `libdwarf`. I thus
+saw that as a deviation from LFS instructions, so next I built the full complete
+[`elfutils`](SPECS/elfutils.spec) (using a `eu-` prefix on the binary
+utilities).
+
+With GCC I deviated by bootstrapping it with Ada (`gnat`) and D (`gcd`) support,
+I am working on a [`gcc`](SPECS/gcc.spec) RPM package that also builds all the
+other languages (similar to the BLFS build of GCC). My GCC build also includes
+the [Integer Set Library](https://en.wikipedia.org/wiki/Integer_set_library).
+With GCC, ISL support can be added by unpacking the ISL source code into the
+GCC source code and making sure the directory is named `isl` (as opposed to,
+say, `isl-0.26`).
+
+The only other major deviation from LFS is with the `make-ca` script that is
+technically from BLFS but that package is shell script only and I will likely
+wait until after SystemD is RPM bootstrapped since it uses a SystemD timer unit
+to run once a week.
+
+With all of the major deviations packaged *except* GCC (being worked on) and
+`make-ca` (waiting until after SystemD is packaged), the order I am following is
+pretty much the order in the LFS book starting with Chapter Five. I am not
+using the build instructions from the early chapters of the LFS book, most of my
+build instructions are *fairly* similar to the Chapter 8 build instructions.
+
+Once GCC is finished and Util-Linux (not yet started) is finished, the plan is
+to pause and audit each spec file, making sure things like the specified license
+is correct and other things, before proceeding with RPM bootstrapping the
+packages in Chapter 8 that are not already RPM packaged.
+
+I may have to do the kernel sooner as there are some kernel options I should
+have enabled but did not. My intent is for RPM itself to be the very *last*
+package I RPM bootstrap before going on to the next phase (building `dnf` and
+`mock`).
