@@ -33,3 +33,15 @@ providing it.
 
 Many of the spec files undoubtedly need work. Many undoubtedly have missing
 `BuildRequires` and other packaging mistakes.
+
+
+Duplicate Documentation
+-----------------------
+
+By default, LFS/BLFS does not compress man or info pages. By default, RPM uses
+gzip compression on man and info pages. Thus when RPM bootstrapping an LFS
+system, you will likely end up with two copies of each man and info page.
+
+The shell script [`remove_duplicates.sh`](remove_duplicates.sh) can be used to
+remove the duplicates. Run it once a day or so during the RPM bootstrap process,
+definitely after installing RPM packaged Perl for the first time.
