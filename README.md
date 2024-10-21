@@ -15,6 +15,8 @@ the GCC RPM which is being worked on. With GCC, currently there are installed
 files that need to be put into the correct place. Also, I need to add `m2` to
 the list of compilers and create a sub-package for it.
 
+(*update: gcc spec file now builds*)
+
 The Perl spec file builds packages but needs to be split up into lots of smaller
 packages. For RPM bootstrapping, that does not matter. That is a lot of tedious
 work but the value is a small bug fix in a bundled module can then be updated
@@ -44,11 +46,11 @@ Duplicate Documentation
 
 By default, LFS/BLFS does not compress man or info pages. By default, RPM uses
 gzip compression on man and info pages. Thus when RPM bootstrapping an LFS
-system, you will likely end up with two copies of each man and info page.
+system, one typically ends up with two copies of each man and info page.
 
 One solution is to gzip all man and info pages *before* the RPM bootstrap. That
 way the files on the file system will have the same file name as the file names
-in the RPM files. Similarly, you can configure your RPM build environment to NOT
+in the RPM files. Similarly, one can configure the RPM build environment to NOT
 gzip the man and info pages. Then once the bootstrap is complete, revert it to
 gzip in future package builds. However, I just use a shell script to find and
 delete the duplicates. Since RPM compresses them and the script only deletes the
@@ -73,10 +75,10 @@ tested a binary build and again would be easy to restore the package if
 something went wrong.
 
 I deviated from the LFS instructions for the OpenSSL API stack, using LibreSSL
-as my default library for the OpenSSL API stack and only using OpenSSL for
-Python which does not support building against LibreSSL. To accomplish that in
-the LFS build, LibreSSL was installed with a prefix of `/usr` and OpenSSL was
-installed with a prefix of `/opt/openssl`.
+as my default library for the OpenSSL API and only using OpenSSL for Python
+which does not support building against LibreSSL. To accomplish that in the LFS
+build, LibreSSL was installed with a prefix of `/usr` and OpenSSL was installed
+with a prefix of `/opt/openssl`.
 
 With RPM management, both can be built with a prefix of `/usr` with the only
 hitch being the `-devel` package for both can not be installed at the same time.
@@ -97,7 +99,7 @@ LFS only builds `libelf` from ElfUtils but RPM requires `libdwarf` from ElfUtils
 so part of building RPM itself was rebuilding ElfUtils *with* `libdwarf`. I thus
 saw that as a deviation from LFS instructions, so next I built the full complete
 [`elfutils`](SPECS/elfutils.spec) (using a `eu-` prefix on the binary
-utilities).
+utilities which are not needed).
 
 With GCC I deviated by bootstrapping it with Ada (`gnat`) and D (`gcd`) support,
 I am working on a [`gcc`](SPECS/gcc.spec) RPM package that also builds all the
@@ -110,30 +112,62 @@ say, `isl-0.26`).
 The [`gcc`](SPECS/gcc.spec) package now properly builds and is installed,
 although I still need to add `m2` compiler support.
 
-The only other major deviation from LFS is with the `make-ca` script that is
-technically from BLFS but that package is shell script only and I may wait until
-after SystemD is RPM bootstrapped since it uses a SystemD timer unit to run once
-a week.
-
-With all of the major deviations packaged *except* `make-ca` (waiting until after
-SystemD is packaged), the order I am following is pretty much the order in the
-LFS book starting with Chapter Five. I am not using the build instructions from
-the early chapters of the LFS book as those were for creating the build
-environment. Most of my build instructions are *fairly* similar to the Chapter 8
-build instructions.
-
-I might actually build SSH2 and Git before proceeding to LFS Chapter 8 stuff
-just so I can use Git without needing to reboot into another GNU/Linux install
-first. They (and needed dependencies) would be built with RPM from the start.
+The only other major deviation from LFS is with the
+[`make-ca`](SPECS/make-ca.spec) script which I patched to use the `libressl`
+binary instead of the `openssl` binary, to use `curl` to retieve new
+`certdata.txt` files, and to install with a default `certdata.txt` file so that
+certificate bundles could be generated even if it is installed off-line.
 
 
+Initial Bootstrap Order
+-----------------------
 
-Once GCC is finished and Util-Linux (not yet started) is finished, the plan is
-to pause and audit each spec file, making sure things like the specified license
-is correct and other things, before proceeding with RPM bootstrapping the
-packages in Chapter 8 that are not already RPM packaged.
+With all of the major deviations packaged, the order followed is pretty much the
+order in the LFS book starting with Chapter Five. I did not using the build
+instructions from the early chapters of the LFS book as those were for creating
+the build environment. Most of my build instructions were *fairly* similar to
+the Chapter 8 build instructions.
 
-I may have to do the kernel sooner as there are some kernel options I should
-have enabled but did not. My intent is for RPM itself to be the very *last*
-package I RPM bootstrap before going on to the next phase (building `dnf` and
-`mock`).
+After packaging [`util-linux`](util-linux) and thus completing the packages in
+the LFS book through Chapter 7, I decided I needed a change in strategy.
+
+* First, I needed git *inside* the LFS being RPM bootstrapped to reduce howxi
+  often a reboot is needed, so I built [`openssh`](SPECS/openssh.spec) and
+  [`git`](SPECS/git.spec). Fortunately the spec files I had written for my LFS
+  11.3 RPM system needed very little modification.
+* Secondly, I decided it would be good to package `gdb` and `valgrind` now, so
+  that package test suites that do more extensive testing when those packages
+  are available can do that testing.
+* Thirdly, I need to come up with a so-called "best practices" for RPM spec
+  files that I can use to audit my spec files.
+
+Then I can go through the LFS book Chapter 8 in order, even rebuilding the
+packages I already built so they have the benefit of gdb/valgrind in the test
+suite and the spec file audit.
+
+### RPM User and Group Dependencies
+
+With new versions of RPM, if a specified file has user and/or group ownership
+other than `root`, RPM will make the existence of that user and/or group a
+package dependency.
+
+Unfortunately RPM uses the facilities of `systemd-sysusers.d` to do so, even
+though system users and groups being defined in the `/etc/passwd` and
+`/etc/group` files are as old as UNIX itself, maybe even older?
+
+With my `util-linux` package, RPM complained about needing `group(tty)` *even
+though the group exists*. With my `openssh-server` package, RPM again complained
+about needing `group(sys)` *even though the group exists*. This is just because
+those groups are not defined in a systemd-sysusers unit file. In fact the *only*systemd-sysusers file defined is for `dbus` which was installed from source
+after SystemD was installed.
+
+I probably will create the systemd-sysusers unit files for the standard system
+users and groups *expected* to exist, however I do not like RPM requiring the
+management of users and groups through systemd-sysusers so that is being turned
+of via
+
+    %_use_weak_usergroup_deps 1
+
+in the `/etc/rpm/macros` file. That macro affects the *build* of a package,
+packages built without that macro set to 1 will still have any non-root users
+and groups defined in the `%files` section as package dependencies.
