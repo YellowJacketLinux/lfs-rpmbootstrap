@@ -39,18 +39,26 @@ https://weakdh.org/ for more information.
 
 DH parameters < 2048-bit should not be used but a few TLS clients still in use
 do not support DH parameters > 1024-bit. When using a 1024-bit group to satisfy
-those clients it is important that they are unique to your server and are
-re-generated frequently.
+those clients it is important that the DHE parameters are unique to your server
+and are re-generated frequently.
 
-YJL provides SystemD timers that will generate a fresh 2048-bit group on a daily
-basis and fresh 3072-bit/4096-bit groups on a monthly basis.
+YJL provides SystemD timers in the `libressl-dhe-systemd` package that will
+generate a fresh 2048-bit group on a daily basis and fresh 3072-bit/4096-bit
+groups on a monthly basis.
 
-To activate the timer for the daily regeneration of the 2048-bit group, as root
-enter the following command:
+If you are running a server that needs to support DHE key exchange, you should
+install the `libressl-dhe-systemd` package. The DHE groups generated will also
+work with servers that use modern OpenSSL instead of LibreSSL.
+
+__IMPORTANT__: That package does not automatically enable the SystemD timers,
+it simply provides them for the system administrator to enable.
+
+Once that package is installed, to activate the timer for the daily regeneration
+of the 2048-bit group, as root enter the following command:
 
     systemctl enable update-dhe-daily.timer
 
-To activate the timer for the daily regeneration of the 3072-bit and 4096-bit
+To activate the timer for the monthly regeneration of the 3072-bit and 4096-bit
 groups, as root enter the following command:
 
     systemctl enable update-dhe-monthly.timer
@@ -73,22 +81,23 @@ Which to Use?
 If you *absolutely* must use a 1024-bit group, you will need to generate it
 yourself. I would recommend regenerating it at least four times a day.
 
-For 2048-bit, 3072-bit, 4096-bit you have a choice. Some prefer the pre-defined
-MODP-IKE parameters as they have likely been reviewed by many eyes, while others
-prefer parameters uniquely generated on the server.
+For the 2048-bit, 3072-bit, 4096-bit groups you have a choice. Some prefer the
+pre-defined MODP-IKE parameters as they have likely been reviewed by many eyes,
+while others prefer parameters uniquely generated on the server.
 
-It is hypothetically possible uniquely generated parameters have a flaw that can
-be exploited (e.g. not truly prime and can be factored) but it is very unlikely.
+It is hypothetically possible that uniquely generated parameters have a flaw
+that can be exploited (e.g. not truly prime and can be factored) but it is very
+unlikely.
 
 Similarly it is possible an attack has been crafted for the RFC published DH
 parameters, though that also is unlikely as it would almost certainly take more
 computing power than even the NSA has to even develop an attack against the
 published 2048-bit group.
 
-My *personal* preference is to use the `dh2048.pem` parameters that are daily
-re-generated on the server when I need to support DHE key exchange. The
-rationale I use is that if an attack ever is developed, it provides a moving
-target rather than a static target.
+My *personal* preference is to configure my servers to use the `dh2048.pem`
+parameters that are daily re-generated on the server when I need to support DHE
+key exchange. The rationale I use is that if an attack ever is developed, it
+provides a moving target rather than a static target.
 
 If security beyond what the `dh4096.pem` parameters can provide is required,
 then I require ECDHE key exchange and do not allow DHE key exchange. Servers

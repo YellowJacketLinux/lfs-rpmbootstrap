@@ -358,6 +358,17 @@ Requires: libstdc++ = %{version}-%{release}
 %description -n libtsan
 The libtsan shared library
 
+%package -n libhwasan
+Summary:  The libhwasan shared library
+Group:    System Environment/Libraries
+License:  Dual BSD-Like and MIT
+Requires: libgcc = %{version}-%{release}
+Requires: libstdc++ = %{version}-%{release}
+
+%description -n libhwasan
+This package contains the libhwasan shared library that is part of
+the GNU compiler collection.
+
 %package -n libubsan
 Summary:  libubsan shared library
 Group:    System Environment/Libraries
@@ -748,6 +759,9 @@ fi
 %post -n libtsan -p /sbin/ldconfig
 %postun -n libtsan -p /sbin/ldconfig
 
+%post -n libhwasan -p /sbin/ldconfig
+%postun -n libhwasan -p /sbin/ldconfig
+
 %post -n libubsan -p /sbin/ldconfig
 %postun -n libubsan -p /sbin/ldconfig
 
@@ -842,6 +856,10 @@ fi
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/ada
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/ada/gcc-interface
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/ada/gcc-interface/ada-tree.def
+%attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/analyzer
+%attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/analyzer/*.h
+%attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/c
+%attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/c/c-tree.def
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/c-family
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/c-family/c-common.def
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/c-family/*.h
@@ -861,6 +879,8 @@ fi
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/d/d-tree.def
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/objc
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/objc/objc-tree.def
+%attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/m2
+%attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/plugin/include/m2/m2-tree.def
 # /usr/libexec stuff
 %attr(0755,root,root) %dir %{_libexecdir}/gcc
 %attr(0755,root,root) %dir %{_libexecdir}/gcc/%{triplet}
@@ -985,14 +1005,20 @@ fi
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/dragonflybsd/netinet/*.d
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/dragonflybsd/sys
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/dragonflybsd/sys/*.d
+%attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/elf
+%attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/elf/*.d
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/freebsd
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/freebsd/*.d
+%attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/freebsd/net
+%attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/freebsd/net/*.d
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/freebsd/netinet
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/freebsd/netinet/*.d
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/freebsd/sys
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/freebsd/sys/*.d
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/linux
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/linux/*.d
+%attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/linux/linux
+%attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/linux/linux/*.d
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/linux/netinet
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/linux/netinet/*.d
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/core/sys/linux/sys
@@ -1030,6 +1056,8 @@ fi
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/etc
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/etc/c
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/etc/c/*.d
+%attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/etc/valgrind
+%attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/etc/valgrind/*.d
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/gcc
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/gcc/*.d
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/gcc/unwind
@@ -1071,6 +1099,8 @@ fi
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/std/internal/test/*.d
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/std/internal/windows
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/std/internal/windows/*.d
+%attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/std/logger
+%attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/std/logger/*.d
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/std/math
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/std/math/*.d
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/d/std/net
@@ -1284,6 +1314,7 @@ fi
 %files -n libstdc++-static
 %defattr(-,root,root,-)
 %attr(0644,root,root) %{_libdir}/libstdc++.a
+%attr(0644,root,root) %{_libdir}/libstdc++exp.a
 %attr(0644,root,root) %{_libdir}/libstdc++fs.a
 %attr(0644,root,root) %{_libdir}/libsupc++.a
 %doc libstdc++-v3/ChangeLog* libstdc++-v3/README libstdc++-v3/doc/html
@@ -1421,6 +1452,14 @@ fi
 %doc libsanitizer/ChangeLog libsanitizer/LICENSE.TXT
 %license libsanitizer/LICENSE.TXT
 
+%files -n libhwasan
+%defattr(-,root,root,-)
+%attr(0755,root,root) %{_libdir}/libhwasan.so.0.0.0
+%{_libdir}/libhwasan.so.0
+%doc build/mylibsdoc/README-RPM.txt
+%doc libsanitizer/ChangeLog libsanitizer/LICENSE.TXT
+%license libsanitizer/LICENSE.TXT
+
 %files -n libubsan
 %defattr(-,root,root,-)
 %attr(0755,root,root) %{_libdir}/libubsan.so.1.0.0
@@ -1434,10 +1473,12 @@ fi
 %{_libdir}/libasan.so
 %{_libdir}/liblsan.so
 %{_libdir}/libtsan.so
+%{_libdir}/libhwasan.so
 %{_libdir}/libubsan.so
 %attr(0644,root,root) %{_libdir}/libasan_preinit.o
 %attr(0644,root,root) %{_libdir}/liblsan_preinit.o
 %attr(0644,root,root) %{_libdir}/libtsan_preinit.o
+%attr(0644,root,root) %{_libdir}/libhwasan_preinit.o
 %attr(0644,root,root) %{_libdir}/libsanitizer.spec
 %attr(0755,root,root) %dir %{_prefix}/lib/gcc/%{triplet}/%{version}/include/sanitizer
 %attr(0644,root,root) %{_prefix}/lib/gcc/%{triplet}/%{version}/include/sanitizer/*.h
@@ -1449,6 +1490,7 @@ fi
 %attr(0644,root,root) %{_libdir}/libasan.a
 %attr(0644,root,root) %{_libdir}/liblsan.a
 %attr(0644,root,root) %{_libdir}/libtsan.a
+%attr(0644,root,root) %{_libdir}/libhwasan.a
 %attr(0644,root,root) %{_libdir}/libubsan.a
 %doc libsanitizer/ChangeLog libsanitizer/LICENSE.TXT
 %license libsanitizer/LICENSE.TXT
@@ -1585,7 +1627,8 @@ fi
 %attr(0755,root,root) %{_libexecdir}/gcc/%{triplet}/%{version}/install-tools/mkinstalldirs
 
 %changelog
-* Sat Oct 19 2024 Michael A. Peters <anymouseprophet@gmail.com> - 14.2.0-0.dev1
+* Sun Oct 20 2024 Michael A. Peters <anymouseprophet@gmail.com> - 14.2.0-0.dev1
+- TODO: add m2 compiler support/package
 - Build for YJL 6.6 (LFS 12.2)
 - Rip out conditionals for bootstrap phases, GCC w/ Ada and D now bootstrapped
 - before RPM bootstrap of LFS.

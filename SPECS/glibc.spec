@@ -13,7 +13,7 @@
 
 Name:		glibc
 Version:	2.40
-Release:	%{?repo}0.rc2%{?dist}
+Release:	%{?repo}0.rc3%{?dist}
 Summary:	The GNU C Library
 
 Group:		System Environment/Libraries
@@ -27,6 +27,8 @@ BuildRequires: %{__sed}
 Requires: libidn2
 Requires(post):   %{insinfo}
 Requires(preun):  %{insinfo}
+# The dynamic linker supports DT_GNU_HASH
+Provides: rtld(GNU_HASH)
 
 %description
 The GNU C Library project provides the core libraries for the GNU system and
@@ -142,6 +144,7 @@ mv %{buildroot}%{_sbindir}/sln %{buildroot}/sbin/
 
 make localedata/install-locales DESTDIR=%{buildroot}
 
+### FIXME ###
 #localedef -i C -f UTF-8 C.UTF-8
 #localedef -i ja_JP -f SHIFT_JIS ja_JP.SJIS 2> /dev/null || true
 
@@ -312,6 +315,8 @@ fi
 %attr(0644,root,root) %{_libdir}/libutil.a
 
 %changelog
+* Sun Oct 20 2024 Michael A. Peters <anymouseprophet@gmail.com> - 2.40-0.rc3
+- Explicity provide rtld(GNU_HASH)
+
 * Fri Oct 18 2024 Michael A. Peters <anymouseprophet@gmail.com> - 2.40-0.rc2
 - Initial spec file for YJL 6.6 (LFS 12.2). Quite likely needs a lot of work.
-- Why isn't libcrypt being built?

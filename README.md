@@ -20,16 +20,20 @@ packages. For RPM bootstrapping, that does not matter. That is a lot of tedious
 work but the value is a small bug fix in a bundled module can then be updated
 via RPM without needing to rebuild all of Perl.
 
-The GLibC spec file has a bug. Other packages detect they need `rtld(GNU_HASH)`
-which I believe is provided by GLibC but the packaging of GLibC does not detect
-that it provides it. I could auto-specify that it provides it, but part of me
-wonders if there actually is a runtime dependency for RPM missing that prevents
-RPM from automatically picking up that GLibC as compiled?
+The GLibC spec file initially had a bug. Other packages detect they need
+`rtld(GNU_HASH)` which was supposed to be provided by GLibC but RPM was not
+detecting that it provided it.
 
-Yes, `binutils` is compiled with `--enable-default-hash-style=gnu` and clearly
-it is working as RPM detects `rtld(GNU_HASH)` as a needed dependency, but for
-whatever reason, the RPM build of GLibC does not auto-detect that GLibC is
-providing it.
+Initially I thought maybe there was an RPM runtime dependency I did not have
+causing RPM to not detect that GLibC provided it despite being able to detect
+that other packages needed it. However after looking at the ‘Fedora 42’ RPM
+spec file for their `glibc` package, what they do is hard-code it:
+
+    Provides: rtld(GNU_HASH)
+
+It bothers me a little bit that RPM will auto-detect a dependency it does not
+have the ability to detect in the package that provides it, but it is what it
+is I suppose.
 
 Many of the spec files undoubtedly need work. Many undoubtedly have missing
 `BuildRequires` and other packaging mistakes.
@@ -103,20 +107,26 @@ With GCC, ISL support can be added by unpacking the ISL source code into the
 GCC source code and making sure the directory is named `isl` (as opposed to,
 say, `isl-0.26`).
 
-The only other major deviation from LFS is with the `make-ca` script that is
-technically from BLFS but that package is shell script only and I will likely
-wait until after SystemD is RPM bootstrapped since it uses a SystemD timer unit
-to run once a week.
+The [`gcc`](SPECS/gcc.spec) package now properly builds and is installed,
+although I still need to add `m2` compiler support.
 
-With all of the major deviations packaged *except* GCC (being worked on) and
-`make-ca` (waiting until after SystemD is packaged), the order I am following is
-pretty much the order in the LFS book starting with Chapter Five. I am not
-using the build instructions from the early chapters of the LFS book, most of my
-build instructions are *fairly* similar to the Chapter 8 build instructions.
+The only other major deviation from LFS is with the `make-ca` script that is
+technically from BLFS but that package is shell script only and I may wait until
+after SystemD is RPM bootstrapped since it uses a SystemD timer unit to run once
+a week.
+
+With all of the major deviations packaged *except* `make-ca` (waiting until after
+SystemD is packaged), the order I am following is pretty much the order in the
+LFS book starting with Chapter Five. I am not using the build instructions from
+the early chapters of the LFS book as those were for creating the build
+environment. Most of my build instructions are *fairly* similar to the Chapter 8
+build instructions.
 
 I might actually build SSH2 and Git before proceeding to LFS Chapter 8 stuff
 just so I can use Git without needing to reboot into another GNU/Linux install
 first. They (and needed dependencies) would be built with RPM from the start.
+
+
 
 Once GCC is finished and Util-Linux (not yet started) is finished, the plan is
 to pause and audit each spec file, making sure things like the specified license
