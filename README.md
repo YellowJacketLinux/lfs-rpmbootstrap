@@ -131,21 +131,27 @@ the Chapter 8 build instructions.
 After packaging [`util-linux`](util-linux) and thus completing the packages in
 the LFS book through Chapter 7, I decided I needed a change in strategy.
 
-* First, I needed git *inside* the LFS being RPM bootstrapped to reduce howxi
-  often a reboot is needed, so I built [`openssh`](SPECS/openssh.spec) and
+
+Intermission Bootstrapping
+--------------------------
+
+* First, I needed git *inside* the LFS system being RPM bootstrapped to reduce
+  how often a reboot is needed, so I built [`openssh`](SPECS/openssh.spec) and
   [`git`](SPECS/git.spec). Fortunately the spec files I had written for my LFS
   11.3 RPM system needed very little modification.
-* Secondly, I decided it would be good to package `gdb` and `valgrind` now, so
-  that package test suites that do more extensive testing when those packages
-  are available can do that testing.
-* Thirdly, I need to come up with a so-called "best practices" for RPM spec
+* Secondly, I decided it would be good to package [`gdb`](gdb.spec) and
+  `valgrind` now, so that package test suites that do more
+  extensive testing when those packages are available can do that testing.
+* Thirdly, I need to come up with a so-called ‘best practices’ for RPM spec
   files that I can use to audit my spec files.
+
+Currently I am working on getting `gdb` and `valgrind` packaged.
 
 Then I can go through the LFS book Chapter 8 in order, even rebuilding the
 packages I already built so they have the benefit of gdb/valgrind in the test
 suite and the spec file audit.
 
-### RPM User and Group Dependencies
+### Best Practices: RPM User and Group Dependency Notes
 
 With new versions of RPM, if a specified file has user and/or group ownership
 other than `root`, RPM will make the existence of that user and/or group a
@@ -158,7 +164,8 @@ though system users and groups being defined in the `/etc/passwd` and
 With my `util-linux` package, RPM complained about needing `group(tty)` *even
 though the group exists*. With my `openssh-server` package, RPM again complained
 about needing `group(sys)` *even though the group exists*. This is just because
-those groups are not defined in a systemd-sysusers unit file. In fact the *only*systemd-sysusers file defined is for `dbus` which was installed from source
+those groups are not defined in a systemd-sysusers unit file. In fact the *only*
+systemd-sysusers file defined is for `dbus` which was installed from source
 after SystemD was installed.
 
 I probably will create the systemd-sysusers unit files for the standard system
@@ -171,3 +178,34 @@ of via
 in the `/etc/rpm/macros` file. That macro affects the *build* of a package,
 packages built without that macro set to 1 will still have any non-root users
 and groups defined in the `%files` section as package dependencies.
+
+Note that with macro, the RPM will still *suggest* a user or group, it just will
+not *require* the user or group.
+
+
+LFS Chapter Eight Bootstrap
+---------------------------
+
+With the so-called ‘best practices’ developed and in hand, I will then package
+everything in LFS 12.2 Chapter 8 either auditing existing RPM spec files to
+bring them inline with the ‘best practices’ or writing brand new spec files
+where I do not currently have them.
+
+Going through the packages in the Chapter 8 order, any package that has build or
+install dependencies RPM does not know about will have to have that dependency
+packaged. For example, SQLite3 is not in the LFS book but when present, Python3
+will use it to make a Python module for it, so when I get to Python3, I will
+have to build an SQLite3 package if I have not already.
+
+For the `man-pages` package, LFS packages it first because many of the man pages
+in it get replaced by man pages from other packages. I am actually going to
+change the install path to `/usr/share/generic-man` to avoid man page conflicts,
+and put it at the *end* of the man path so that man pages from that collection
+are only presented to the user if not provided by another package.
+
+The rebuild of GCC in this phase is when I will add the `m2` (GNU Modula-2)
+compiler support.
+
+At this point, I will have a very good base and can go on to RPM bootstrapping
+the various BLFS packages (and a few outside of BLF) and then finally build the
+RPM package.
