@@ -140,12 +140,13 @@ Intermission Bootstrapping
   [`git`](SPECS/git.spec). Fortunately the spec files I had written for my LFS
   11.3 RPM system needed very little modification.
 * Secondly, I decided it would be good to package [`gdb`](gdb.spec) and
-  `valgrind` now, so that package test suites that do more
-  extensive testing when those packages are available can do that testing.
+  [`valgrind`](SPECS/valgrind.spec) now, so that package test suites that do
+  more extensive testing when those packages are available can do that testing.
 * Thirdly, I need to come up with a so-called ‘best practices’ for RPM spec
   files that I can use to audit my spec files.
 
-Currently I am working on getting `gdb` and `valgrind` packaged.
+Currently the first two are done, working on the third (in LaTeX, and not (yet)
+in a public git)
 
 Then I can go through the LFS book Chapter 8 in order, even rebuilding the
 packages I already built so they have the benefit of gdb/valgrind in the test
