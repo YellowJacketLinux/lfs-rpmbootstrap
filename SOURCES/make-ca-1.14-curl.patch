@@ -1,0 +1,79 @@
+diff -ur make-ca-1.14.orig/CHANGELOG make-ca-1.14/CHANGELOG
+--- make-ca-1.14.orig/CHANGELOG	2024-07-13 20:34:30.000000000 -0700
++++ make-ca-1.14/CHANGELOG	2024-10-27 06:35:48.675438023 -0700
+@@ -1,3 +1,4 @@
++1.14yjl  - Use curl instead of OpenSSL s_client, remove proxy switch.
+ 1.14     - Silence a warning from OpenSSL 3.2.x
+          - Stop using statically named temporary files
+          - Prevent translated date in the man page
+diff -ur make-ca-1.14.orig/make-ca make-ca-1.14/make-ca
+--- make-ca-1.14.orig/make-ca	2024-07-13 20:34:30.000000000 -0700
++++ make-ca-1.14/make-ca	2024-10-27 06:33:50.893915654 -0700
+@@ -28,6 +28,7 @@
+     KEYTOOL="${JAVA_HOME}/bin/keytool"
+     MD5SUM="/usr/bin/md5sum"
+     OPENSSL="/usr/bin/openssl"
++    CURL="/usr/bin/curl"
+     TRUST="/usr/bin/trust"
+     ANCHORDIR="${PKIDIR}/anchors"
+     ANCHORLIST="${PKIDIR}/anchors.md5sums"
+@@ -186,11 +187,6 @@
+           shift 2
+         fi
+       ;;
+-      -p | --proxy)
+-        check_arg $1 $2
+-        PROXY="${2}"
+-        shift 2
+-      ;;
+       -r | --rebuild)
+         if test "${CERTDATAY}" == "0" -a "${GET}" == "0"; then
+           REBUILD="1"
+@@ -310,9 +306,6 @@
+   echo "        -n, --nssdb {\$PKIDIR/nssdb}"
+   echo "                         The output path for the shared NSS DB"
+   echo ""
+-  echo "        -p, --proxy [URI:PORT]"
+-  echo "                         Use proxy server for download"
+-  echo ""
+   echo "        -k, --keytool [\$JAVA_HOME/bin/keytool]"
+   echo "                         The path of the Java keytool utility"
+   echo ""
+@@ -673,16 +666,8 @@
+   echo -n "Checking for new version of certdata.txt..."
+   HOST=$(echo "${URL}" | /usr/bin/cut -d / -f 3)
+   _url=$(echo "${URL}" | sed 's@raw-file@log@')
+-  SARGS="-ign_eof -connect ${HOST}:443 -verifyCAfile ${MOZILLA_CA_ROOT}"
+-  if test -d /etc/ssl/certs; then
+-    SARGS="${SARGS} -verifyCApath ${CERTDIR}"
+-  fi
+-  SARGS="${SARGS} -verify_return_error"
+-  if test "${PROXY}x" != "x"; then
+-    SARGS="${SARGS} -proxy ${PROXY}"
+-  fi
+   echo GET ${_url} | \
+-  ${OPENSSL} s_client ${SARGS} 2> /dev/null > "${TEMPDIR}/certdata.txt.log"
++  ${CURL} ${_url} 2> /dev/null > "${TEMPDIR}/certdata.txt.log"
+   unset _url
+   echo "done."
+ 
+@@ -707,7 +692,7 @@
+   # Download the new file
+   echo -n "Downloading certdata.txt..."
+   echo GET ${URL} | \
+-  ${OPENSSL} s_client ${SARGS} 2> /dev/null >> "${CERTDATA}"
++  ${CURL} ${URL} 2> /dev/null >> "${CERTDATA}"
+   _line=$(( $(grep -n -m 1 "^#$" "${CERTDATA}" | cut -d ":" -f 1) - 1))
+   sed -e "1,${_line}d" -i "${CERTDATA}"
+   sed "1i # Revision:${REVISION}" -i "${CERTDATA}"
+diff -ur make-ca-1.14.orig/make-ca.conf.dist make-ca-1.14/make-ca.conf.dist
+--- make-ca-1.14.orig/make-ca.conf.dist	2024-07-13 20:34:30.000000000 -0700
++++ make-ca-1.14/make-ca.conf.dist	2024-10-27 06:24:38.570883699 -0700
+@@ -7,6 +7,7 @@
+ KEYTOOL="${JAVA_HOME}/bin/keytool"
+ MD5SUM="/usr/bin/md5sum"
+ OPENSSL="/usr/bin/openssl"
++CURL="/usr/bin/curl"
+ TRUST="/usr/bin/trust"
+ ANCHORDIR="${PKIDIR}/anchors"
+ ANCHORLIST="${PKIDIR}/anchors.md5sums"
